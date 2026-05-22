@@ -1,0 +1,33 @@
+{
+  "name": "obsidian-note-to-public",
+  "version": "0.1.0",
+  "description": "一键发布 Obsidian 笔记到微信公众号等平台",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs development",
+    "build": "node esbuild.config.mjs production"
+  },
+  "keywords": [
+    "obsidian",
+    "plugin",
+    "wechat",
+    "publish"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "latest",
+    "tslib": "^2.6.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "juice": "^11.0.0",
+    "highlight.js": "^11.9.0",
+    "mermaid": "^10.9.0",
+    "js-yaml": "^4.1.0"
+  }
+}
