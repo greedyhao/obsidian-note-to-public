@@ -15,6 +15,14 @@ export class MermaidRenderer {
             theme: "default",
             securityLevel: "strict",
             fontFamily: "sans-serif",
+            // 禁用 HTML 标签，强制使用纯 SVG 渲染文本，确保 100% 兼容 XML 规范
+            htmlLabels: false,
+            flowchart: {
+                curve: "basis",
+                padding: 15,
+                // 针对 flowchart 明确禁用 HTML 标签
+                htmlLabels: false,
+            },
         });
 
         this.initialized = true;

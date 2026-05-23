@@ -23,7 +23,7 @@
 ### 开发安装
 
 ```bash
-git clone https://github.com/yourusername/obsidian-note-to-public.git
+git clone https://github.com/greedyhao/obsidian-note-to-public.git
 cd obsidian-note-to-public
 pnpm install
 pnpm run build

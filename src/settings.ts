@@ -1,8 +1,7 @@
 export interface WechatSettings {
-    appId: string;
-    appSecret: string;
+    appId: string;             // 明文，存 data.json
+    appSecretName: string;     // SecretStorage 中的 key 名称
     defaultAuthor: string;
-    defaultCoverUrl: string;
     autoPublish: boolean;
 }
 
@@ -13,9 +12,8 @@ export interface NoteToPublicSettings {
 export const DEFAULT_SETTINGS: NoteToPublicSettings = {
     wechat: {
         appId: "",
-        appSecret: "",
+        appSecretName: "note-to-public-appsecret",
         defaultAuthor: "",
-        defaultCoverUrl: "",
         autoPublish: false,
     }
 };

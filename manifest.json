@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
   "description": "一键发布 Obsidian 笔记到微信公众号等平台",
-  "author": "Your Name",
-  "authorUrl": "",
+  "author": "greedyhao",
+  "authorUrl": "https://github.com/greedyhao",
   "fundingUrl": "",
-  "isDesktopOnly": true
+  "isDesktopOnly": false
 }

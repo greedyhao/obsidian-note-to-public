@@ -138,10 +138,20 @@ export default class NoteToPublicPlugin extends Plugin {
         }
 
         const wechatConfig = this.settings.wechat;
-        if (!wechatConfig.appId || !wechatConfig.appSecret) {
-            new Notice("请先配置微信公众号的 AppID 和 AppSecret");
+        if (!wechatConfig.appId) {
+            new Notice("请先在设置中配置微信公众号的 AppID");
             return;
         }
+
+        // AppSecret 固定使用 SecretStorage 中的 key
+        const secretName = "note-to-public-appsecret";
+        const appSecret = await this.app.secretStorage.getSecret(secretName);
+        if (!appSecret) {
+            new Notice("请先在设置中配置 AppSecret");
+            return;
+        }
+
+        const appId = wechatConfig.appId;
 
         try {
             // 读取文件内容
@@ -162,8 +172,8 @@ export default class NoteToPublicPlugin extends Plugin {
             new PublishModal(
                 this.app,
                 {
-                    appId: wechatConfig.appId,
-                    appSecret: wechatConfig.appSecret,
+                    appId,
+                    appSecret,
                 },
                 {
                     title: parsed.metadata.title,
@@ -184,6 +194,8 @@ export default class NoteToPublicPlugin extends Plugin {
                         mermaidBlocks,
                         images,
                         autoPublish: options.autoPublish,
+                        appId,
+                        appSecret,
                     });
                 }
             ).open();
@@ -204,7 +216,10 @@ export default class NoteToPublicPlugin extends Plugin {
         mermaidBlocks: Map<string, string>;
         images: Map<string, { alt: string; path: string }>;
         autoPublish: boolean;
+        appId: string;
+        appSecret: string;
     }) {
+        const { appId, appSecret } = params;
         const progressModal = new ProgressModal(this.app);
         progressModal.open();
 
@@ -215,10 +230,7 @@ export default class NoteToPublicPlugin extends Plugin {
         try {
             updateProgress("正在初始化...");
 
-            const auth = new WechatAuth(
-                this.settings.wechat.appId,
-                this.settings.wechat.appSecret
-            );
+            const auth = new WechatAuth(appId, appSecret);
             const publisher = new WechatPublisher(auth);
 
             // 1. 渲染并上传 Mermaid 图表
@@ -227,34 +239,39 @@ export default class NoteToPublicPlugin extends Plugin {
 
             for (const [blockId, code] of params.mermaidBlocks) {
                 try {
-                    // 用 MermaidRenderer 渲染为 SVG
+                    // 用 MermaidRenderer 渲染为 SVG（纯 SVG，无 foreignObject）
                     const svg = await this.mermaidRenderer.renderToSVG(code);
-                    const svgEl = new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("svg");
 
+                    const svgEl = new DOMParser().parseFromString(svg, "image/svg+xml").querySelector("svg");
                     if (!svgEl) {
                         throw new Error("SVG not found");
                     }
 
-                    // 从 viewBox 或宽高属性获取尺寸（保持原始比例）
+                    // 从 viewBox 获取尺寸
                     let w = 800, h = 600;
                     const viewBox = svgEl.getAttribute("viewBox");
                     if (viewBox) {
                         const parts = viewBox.split(/[\s,]+/).map(Number);
                         if (parts.length >= 4) { w = parts[2]; h = parts[3]; }
                     }
-                    // 百分比宽高的 SVG 用 viewBox 尺寸，确保比例正确
-                    const attrW = svgEl.getAttribute("width") || "";
-                    const attrH = svgEl.getAttribute("height") || "";
-                    const parsedW = parseFloat(attrW);
-                    const parsedH = parseFloat(attrH);
-                    if (!isNaN(parsedW) && !attrW.includes("%") && parsedW > 0) w = parsedW;
-                    if (!isNaN(parsedH) && !attrH.includes("%") && parsedH > 0) h = parsedH;
 
-                    // 固定宽度 800px，按比例缩放（避免拉伸）
+                    // 固定宽度 800px，按比例缩放
                     const targetW = 800;
                     const targetH = Math.round((h / w) * targetW);
                     w = targetW;
                     h = targetH;
+
+                    // 设置 SVG 尺寸
+                    svgEl.setAttribute("width", `${w}`);
+                    svgEl.setAttribute("height", `${h}`);
+
+                    // 确保 xmlns 命名空间存在
+                    if (!svgEl.hasAttribute("xmlns")) {
+                        svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                    }
+
+                    const svgText = new XMLSerializer().serializeToString(svgEl);
+                    const svgDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgText);
 
                     // 2x 缩放 Canvas 转 PNG
                     const scale = 2;
@@ -266,25 +283,17 @@ export default class NoteToPublicPlugin extends Plugin {
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.scale(scale, scale);
 
-                    // 给 SVG 加固定宽高属性（否则浏览器渲染时可能按百分比）
-                    svgEl.setAttribute("width", `${w}`);
-                    svgEl.setAttribute("height", `${h}`);
-                    const svgText = new XMLSerializer().serializeToString(svgEl);
-
                     const pngDataUrl: string = await new Promise((resolve, reject) => {
                         const img = new Image();
-                        const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
-                        const blobUrl = URL.createObjectURL(blob);
                         img.onload = () => {
                             ctx.drawImage(img, 0, 0, w, h);
-                            URL.revokeObjectURL(blobUrl);
                             resolve(canvas.toDataURL("image/png"));
                         };
-                        img.onerror = () => {
-                            URL.revokeObjectURL(blobUrl);
+                        img.onerror = (e) => {
+                            console.error("SVG load error:", e);
                             reject(new Error("SVG image load failed"));
                         };
-                        img.src = blobUrl;
+                        img.src = svgDataUrl;
                     });
 
                     const pngBuffer = Uint8Array.from(
@@ -479,6 +488,7 @@ class NoteToPublicSettingTab extends PluginSettingTab {
         // 微信公众号设置
         containerEl.createEl("h3", { text: "微信公众号" });
 
+        // AppID 明文保存
         new Setting(containerEl)
             .setName("AppID")
             .setDesc("微信公众号的 AppID")
@@ -492,18 +502,38 @@ class NoteToPublicSettingTab extends PluginSettingTab {
                     })
             );
 
+        // AppSecret 保存到 SecretStorage
         new Setting(containerEl)
             .setName("AppSecret")
-            .setDesc("微信公众号的 AppSecret")
+            .setDesc("加密存储到 Obsidian SecretStorage（设置后在 设置 → 安全 → 密钥存储 中管理）")
             .addText((text) => {
                 text.inputEl.type = "password";
-                text
-                    .setPlaceholder("请输入 AppSecret")
-                    .setValue(this.plugin.settings.wechat.appSecret)
-                    .onChange(async (value) => {
-                        this.plugin.settings.wechat.appSecret = value;
+                // 异步检查 SecretStorage 中是否已有 AppSecret
+                (async () => {
+                    const secret = await this.app.secretStorage.getSecret("note-to-public-appsecret");
+                    if (secret) {
+                        text.setPlaceholder("已配置（点击修改）");
+                    } else {
+                        text.setPlaceholder("请输入 AppSecret");
+                    }
+                })();
+                text.onChange(async (value) => {
+                    if (!value) return;
+                    try {
+                        // 写入 SecretStorage，用固定 key
+                        await this.app.secretStorage.setSecret("note-to-public-appsecret", value);
+                        // settings 中只存一个标记名
+                        this.plugin.settings.wechat.appSecretName = "note-to-public-appsecret";
                         await this.plugin.saveSettings();
-                    });
+                        new Notice("AppSecret 已加密保存");
+                        // 更新 placeholder 显示状态
+                        text.setValue("");
+                        text.setPlaceholder("已配置（点击修改）");
+                    } catch (e) {
+                        console.error("保存 AppSecret 失败:", e);
+                        new Notice("保存 AppSecret 失败");
+                    }
+                });
             });
 
         new Setting(containerEl)
@@ -533,7 +563,11 @@ class NoteToPublicSettingTab extends PluginSettingTab {
 
         // 说明信息
         containerEl.createEl("p", {
-            text: "提示：获取 AppID 和 AppSecret 请到微信公众平台 -> 设置与开发 -> 基本配置",
+            text: "提示：获取 AppID 和 AppSecret 请到微信公众平台 → 设置与开发 → 基本配置",
+            cls: "setting-item-description",
+        });
+        containerEl.createEl("p", {
+            text: "AppSecret 已加密存储，可在 Obsidian 设置 → 安全 → 密钥存储 中查看",
             cls: "setting-item-description",
         });
     }
