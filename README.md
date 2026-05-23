@@ -1,26 +1,26 @@
 # Note to Public for Obsidian
 
-一键发布 Obsidian 笔记到多个平台的插件。目前已支持微信公众号。
+A plugin to publish Obsidian notes to multiple platforms with one click. Currently supports WeChat Official Account (微信公众号).
 
-## 功能特性
+## Features
 
-- ✅ **微信公众号发布**: 通过官方 API 一键发布草稿或直接发布
-- 📝 **Obsidian 语法支持**: 支持 WikiLink、高亮 `==text==`、删除线 `~~text~~`、Callout 等
-- 📊 **Mermaid 图表**: 自动将 Mermaid 图表渲染为图片并上传
-- 🖼️ **图片自动上传**: 本地图片自动上传至微信素材库
-- 🎨 **适配微信排版**: 生成微信图文消息兼容的 HTML
-- 👁️ **实时预览**: 侧边栏预览发布效果，切换文件自动更新
+- ✅ **WeChat Official Account Publishing**: Publish drafts or articles directly via official API
+- 📝 **Obsidian Syntax Support**: Supports WikiLink, highlight `==text==`, strikethrough `~~text~~`, Callout, etc.
+- 📊 **Mermaid Diagrams**: Automatically render Mermaid diagrams as images and upload them
+- 🖼️ **Auto Image Upload**: Local images are automatically uploaded to WeChat media library
+- 🎨 **WeChat Formatting**: Generate WeChat-compatible HTML for articles
+- 👁️ **Live Preview**: Sidebar preview with automatic updates when switching files
 
-## 安装
+## Installation
 
-### 手动安装
+### Manual Installation
 
-1. 下载最新版本：[Releases](https://github.com/yourusername/obsidian-note-to-public/releases)
-2. 解压到 Obsidian 插件目录：`<vault>/.obsidian/plugins/obsidian-note-to-public/`
-3. 重启 Obsidian
-4. 在设置中启用插件
+1. Download the latest release: [Releases](https://github.com/greedyhao/obsidian-note-to-public/releases)
+2. Extract to your Obsidian plugins folder: `<vault>/.obsidian/plugins/obsidian-note-to-public/`
+3. Restart Obsidian
+4. Enable the plugin in settings
 
-### 开发安装
+### Development Installation
 
 ```bash
 git clone https://github.com/greedyhao/obsidian-note-to-public.git
@@ -29,137 +29,139 @@ pnpm install
 pnpm run build
 ```
 
-然后将项目文件夹复制到 Obsidian 插件目录。
+Then copy the project folder to your Obsidian plugins directory.
 
-## 配置
+## Configuration
 
-1. 打开 Obsidian 设置 -> 第三方插件 -> Note to Public
-2. 填写微信公众号的 **AppID** 和 **AppSecret**
-   - 获取方式：微信公众平台 -> 设置与开发 -> 基本配置
-3. 可选：设置默认作者名称
+1. Open Obsidian Settings -> Community plugins -> Note to Public
+2. Enter your WeChat Official Account **AppID** and **AppSecret**
+   - Get them from: WeChat Public Platform -> Settings & Development -> Basic Configuration
+   - **AppSecret is encrypted and stored in Obsidian SecretStorage, manageable in Settings -> Security -> Key Storage**
+3. Optional: Set default author name
 
-## 使用
+## Usage
 
-### 预览发布效果
+### Preview Before Publishing
 
-**方式一：命令面板**
-1. 按 `Ctrl/Cmd + P` 打开命令面板
-2. 输入"打开发布预览"并执行
+**Method 1: Command Palette**
+1. Press `Ctrl/Cmd + P` to open command palette
+2. Type "打开发布预览" (Open Publish Preview) and execute
 
-**方式二：右键菜单**
-1. 在文件列表中右键点击 Markdown 文件
-2. 选择"👁️ 打开发布预览"
+**Method 2: Context Menu**
+1. Right-click on a Markdown file in the file list
+2. Select "👁️ 打开发布预览" (Open Publish Preview)
 
-**预览功能说明：**
-- 预览面板会显示在右侧边栏
-- 切换文件时预览内容会自动更新
-- 显示文章标题、作者、摘要等信息
-- 标注 Mermaid 图表和本地图片数量（发布时自动处理）
-- 模拟微信图文的渲染效果
+**Preview Features:**
+- Preview panel appears in the right sidebar
+- Content updates automatically when switching files
+- Displays article title, author, summary, etc.
+- Shows count of Mermaid diagrams and local images
+- Simulates WeChat article rendering
 
-### 发布到微信公众号
+### Publish to WeChat Official Account
 
-**方式一：命令面板**
-1. 打开要发布的笔记
-2. 按 `Ctrl/Cmd + P` 打开命令面板
-3. 输入"发布到微信公众号"并执行
+**Method 1: Command Palette**
+1. Open the note you want to publish
+2. Press `Ctrl/Cmd + P` to open command palette
+3. Type "发布到微信公众号" (Publish to WeChat) and execute
 
-**方式二：右键菜单**
-1. 在文件列表中右键点击 Markdown 文件
-2. 选择"📤 发布到微信公众号"
+**Method 2: File Context Menu**
+1. Right-click on a Markdown file in the file list
+2. Select "📤 发布到微信公众号" (Publish to WeChat)
 
-**方式三：编辑器右键**
-1. 在编辑器中右键
-2. 选择"📤 发布到微信公众号"
+**Method 3: Editor Context Menu**
+1. Right-click in the editor
+2. Select "📤 发布到微信公众号" (Publish to WeChat)
 
-### Frontmatter 支持
+### Frontmatter Support
 
-在笔记顶部添加 YAML Frontmatter，发布时会自动读取：
+Add YAML frontmatter at the top of your note:
 
 ```yaml
 ---
-title: 文章标题
-description: 文章摘要（最多54字符）
-author: 作者名
+title: Article Title
+description: Article summary (max 54 characters)
+author: Author Name
 date: 2024-01-01
-tags: [标签1, 标签2]
+tags: [tag1, tag2]
 ---
 ```
 
-### 支持的 Obsidian 语法
+### Supported Obsidian Syntax
 
-| 语法 | 转换效果 |
-|------|---------|
-| `[[WikiLink]]` | 纯文本（显示别名） |
-| `![[Embed]]` | 待实现（标记为嵌入） |
-| `==高亮==` | 黄色背景高亮 |
-| `~~删除线~~` | 带删除线的文字 |
-| `> [!note] ...` | 引用块带图标前缀 |
-| `%%注释%%` | 移除 |
-| ```mermaid ... ``` | 渲染为图片 |
+| Syntax | Conversion |
+|--------|-----------|
+| `[[WikiLink]]` | Plain text (displays alias) |
+| `![[Embed]]` | To be implemented (marked as embed) |
+| `==highlight==` | Yellow background highlight |
+| `~~strikethrough~~` | Strikethrough text |
+| `> [!note] ...` | Blockquote with icon prefix |
+| `%%comment%%` | Removed |
+| ```mermaid ... ``` | Rendered as image |
 
-## 注意事项
+## Important Notes
 
-### 微信公众号限制
+### WeChat Official Account Limitations
 
-- 需要**已认证**的微信公众号（订阅号或服务号）
-- 每个公众号每天调用 API 有次数限制
-- 图片大小不能超过 2MB
-- 文章内容需要符合微信公众平台规范
+- Requires a **verified** WeChat Official Account (subscription or service account)
+- Daily API call limits apply
+- Images cannot exceed 2MB
+- Article content must comply with WeChat Public Platform guidelines
 
-### Mermaid 图表
+### Mermaid Diagrams
 
-- Mermaid 图表会被渲染为 PNG 图片上传
-- 复杂的图表可能需要更长的处理时间
-- 确保你的网络连接正常以便上传图片
+- Mermaid diagrams are rendered as PNG images and uploaded
+- Complex diagrams may take longer to process
+- Ensure stable internet connection for image uploads
+- **Note**: HTML labels are disabled to ensure complete diagram rendering using pure SVG
 
-## 开发
+## Development
 
-### 项目结构
+### Project Structure
 
 ```
 src/
-├── main.ts                      # 插件入口
-├── settings.ts                  # 配置管理
+├── main.ts                      # Plugin entry point
+├── settings.ts                  # Configuration management
 ├── ui/
-│   ├── publish-modal.ts         # 发布界面
-│   └── preview-view.ts          # 预览侧边栏视图
+│   ├── publish-modal.ts         # Publish interface
+│   └── preview-view.ts          # Preview sidebar view
 ├── markdown/
-│   ├── obsidian-parser.ts       # Obsidian 语法解析
-│   ├── mermaid-renderer.ts      # Mermaid 渲染
-│   └── wechat-formatter.ts      # 微信 HTML 格式化
+│   ├── obsidian-parser.ts       # Obsidian syntax parsing
+│   ├── mermaid-renderer.ts      # Mermaid rendering
+│   └── wechat-formatter.ts      # WeChat HTML formatting
 └── platforms/
     └── wechat/
-        ├── auth.ts              # 微信认证
-        ├── api.ts               # 微信 API
-        └── publisher.ts         # 发布流程
+        ├── auth.ts              # WeChat authentication
+        ├── api.ts               # WeChat API
+        └── publisher.ts         # Publishing workflow
 ```
 
-### 构建
+### Build
 
 ```bash
-pnpm run dev      # 开发模式（热重载）
-pnpm run build    # 生产构建
+pnpm run dev      # Development mode (hot reload)
+pnpm run build    # Production build
 ```
 
-## 路线图
+## Roadmap
 
-- [ ] 支持更多平台（知乎、掘金、CSDN 等）
-- [ ] 支持文章模板
-- [ ] 支持定时发布
-- [ ] 支持文章历史记录
-- [ ] 批量发布功能
+- [ ] Support more platforms (Zhihu, Juejin, CSDN, etc.)
+- [ ] Article templates
+- [ ] Scheduled publishing
+- [ ] Article history
+- [ ] Batch publishing
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-## 许可证
+## License
 
 MIT License
 
-## 参考项目
+## Acknowledgments
 
-- [obsidian-mp-publisher](https://github.com/sunbooshi/obsidian-mp-publisher) — Obsidian 公众号发布插件，参考了其 DOM 处理、图片上传、素材库管理等实现
-- [note-to-mp](https://github.com/nicekwell/note-to-mp) — 公众号发布插件，参考了其 Mermaid SVG → PNG 转换、封面图上传、代码块换行处理
-- [WeMD](https://github.com/nicekwell/WeMD) — 公众号编辑器，参考了其 markdown-it + juice 渲染方案、CSS 内联策略、代码块样式处理
+- [obsidian-mp-publisher](https://github.com/sunbooshi/obsidian-mp-publisher) — Referenced DOM processing, image upload, and media library management
+- [note-to-mp](https://github.com/nicekwell/note-to-mp) — Referenced Mermaid SVG→PNG conversion, cover upload, and code block handling
+- [WeMD](https://github.com/nicekwell/WeMD) — Referenced markdown-it + juice rendering, CSS inline strategy, and code block styling
