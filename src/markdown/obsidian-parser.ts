@@ -134,12 +134,24 @@ export class ObsidianParser {
     }
 
     extractLocalImages(content: string): { content: string; images: Map<string, { alt: string; path: string }> } {
-        const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
         const images = new Map<string, { alt: string; path: string }>();
-        let match;
         let imageIndex = 0;
 
         let processedContent = content;
+
+        // 先处理 Obsidian 嵌入图片 ![[filename]]
+        const embedRegex = /<!-- EMBED:(.*?) -->/g;
+        let embedMatch;
+        while ((embedMatch = embedRegex.exec(content)) !== null) {
+            const imageId = `IMAGE_${imageIndex++}`;
+            const filename = embedMatch[1];
+            images.set(imageId, { alt: filename, path: filename });
+            processedContent = processedContent.replace(embedMatch[0], `<!-- ${imageId} -->`);
+        }
+
+        // 再处理标准 Markdown 图片 ![alt](path)
+        const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+        let match;
         while ((match = imageRegex.exec(content)) !== null) {
             const imageId = `IMAGE_${imageIndex++}`;
             const alt = match[1];

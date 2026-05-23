@@ -12,9 +12,24 @@ export class WechatFormatter {
     format(markdownContent: string, imageMap: Map<string, string>): string {
         let html = this.renderer.render(markdownContent);
 
+        console.log('[WechatFormatter] imageMap:', imageMap);
+        console.log('[WechatFormatter] 原始 HTML:', html.substring(0, 500));
+
+        // 替换图片占位符
         for (const [placeholder, url] of imageMap) {
-            html = html.replace(`<!-- ${placeholder} -->`, `<img src="${url}" style="max-width:100%;border-radius:4px;margin:16px 0;" />`);
+            const imgTag = `<img src="${url}" style="max-width:100%;border-radius:4px;margin:16px 0;" />`;
+            // 处理可能被包裹在 <p> 标签中的情况
+            const pPattern = `<p><!-- ${placeholder} --></p>`;
+            const commentPattern = `<!-- ${placeholder} -->`;
+            console.log(`[WechatFormatter] 尝试替换 ${placeholder}, URL: ${url}`);
+            console.log(`[WechatFormatter] 查找模式: "${pPattern}" 和 "${commentPattern}"`);
+            console.log(`[WechatFormatter] HTML 中是否包含 pPattern: ${html.includes(pPattern)}`);
+            console.log(`[WechatFormatter] HTML 中是否包含 commentPattern: ${html.includes(commentPattern)}`);
+            html = html.replace(new RegExp(`<p><!-- ${placeholder} --></p>`, 'g'), imgTag);
+            html = html.replace(new RegExp(`<!-- ${placeholder} -->`, 'g'), imgTag);
         }
+
+        console.log('[WechatFormatter] 替换后 HTML:', html.substring(0, 500));
 
         html = this.sanitizeForWechat(html);
 
@@ -35,8 +50,11 @@ export class WechatFormatter {
     formatForCopy(markdownContent: string, imageMap: Map<string, string>): string {
         let html = this.renderer.render(markdownContent);
 
+        // 替换图片占位符
         for (const [placeholder, url] of imageMap) {
-            html = html.replace(`<!-- ${placeholder} -->`, `<img src="${url}" style="max-width:100%;border-radius:4px;margin:16px 0;" />`);
+            const imgTag = `<img src="${url}" style="max-width:100%;border-radius:4px;margin:16px 0;" />`;
+            html = html.replace(new RegExp(`<p><!-- ${placeholder} --></p>`, 'g'), imgTag);
+            html = html.replace(new RegExp(`<!-- ${placeholder} -->`, 'g'), imgTag);
         }
 
         html = this.sanitizeForWechat(html);

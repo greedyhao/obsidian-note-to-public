@@ -313,21 +313,58 @@ export default class NoteToPublicPlugin extends Plugin {
             updateProgress("正在上传本地图片...");
             const localImageMap = new Map<string, string>();
 
+            console.log('[main] params.images:', params.images);
+
             for (const [imageId, { path }] of params.images) {
                 try {
-                    const fullPath = this.getFullImagePath(path, params.file);
-                    const imageFile = this.app.vault.getAbstractFileByPath(fullPath);
+                    let imageFile: TFile | null = null;
 
-                    if (imageFile && imageFile instanceof TFile) {
+                    // 先尝试直接路径
+                    const fullPath = this.getFullImagePath(path, params.file);
+                    console.log(`[main] 图片 ${imageId}: path=${path}, fullPath=${fullPath}`);
+                    const directFile = this.app.vault.getAbstractFileByPath(fullPath);
+
+                    if (directFile && directFile instanceof TFile) {
+                        imageFile = directFile;
+                        console.log(`[main] 通过直接路径找到文件`);
+                    } else {
+                        // 尝试在 vault 中搜索文件名（Obsidian 嵌入格式）
+                        // 可能文件在 attachments 或其他子目录
+                        const files = this.app.vault.getFiles();
+                        imageFile = files.find(f => f.name === path || f.path.endsWith(path) || f.path.endsWith('/' + path)) as TFile | undefined || null;
+                        if (imageFile) {
+                            console.log(`[main] 通过搜索找到文件: ${imageFile.path}`);
+                        } else {
+                            // 最后尝试在当前文件目录下查找
+                            const currentDir = params.file.parent?.path || '';
+                            const possiblePath = currentDir ? `${currentDir}/${path}` : path;
+                            const possibleFile = this.app.vault.getAbstractFileByPath(possiblePath);
+                            if (possibleFile && possibleFile instanceof TFile) {
+                                imageFile = possibleFile;
+                                console.log(`[main] 在当前目录找到文件: ${imageFile.path}`);
+                            }
+                        }
+                    }
+
+                    console.log(`[main] imageFile:`, imageFile);
+
+                    if (imageFile) {
                         const binary = await this.app.vault.readBinary(imageFile);
+                        console.log(`[main] 读取到二进制数据, 大小: ${binary.byteLength}`);
                         const url = await publisher.uploadSingleImage(binary, imageFile.name);
+                        console.log(`[main] 上传成功, URL: ${url}`);
                         localImageMap.set(imageId, url);
                         updateProgress(`已上传图片 ${localImageMap.size}/${params.images.size}`);
+                    } else {
+                        console.log(`[main] 图片文件不存在: ${path}`);
+                        new Notice(`图片文件不存在: ${path}`);
                     }
                 } catch (error) {
                     console.error(`图片上传失败: ${path}`, error);
                 }
             }
+
+            console.log('[main] localImageMap:', localImageMap);
 
             // 3. 格式化内容为微信 HTML
             updateProgress("正在格式化内容...");
