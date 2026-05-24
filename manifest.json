@@ -1,7 +1,7 @@
 {
   "id": "note-to-public",
   "name": "Note to Public",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "0.15.0",
   "description": "一键发布 Obsidian 笔记到微信公众号等平台",
   "author": "greedyhao",
