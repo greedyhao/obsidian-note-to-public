@@ -27,13 +27,13 @@ export default class NoteToPublicPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
 
-        this.mermaidRenderer = new MermaidRenderer();
+        this.mermaidRenderer = new MermaidRenderer(this.app);
 
         // 注册预览视图
         this.registerView(
             VIEW_TYPE_PREVIEW,
             (leaf) => {
-                this.previewView = new PreviewView(leaf, this.settings);
+                this.previewView = new PreviewView(leaf, this.settings, this.app);
                 return this.previewView;
             }
         );

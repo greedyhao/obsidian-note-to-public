@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, TFile, Notice, MarkdownRenderer, Component } from "obsidian";
+import { App, ItemView, WorkspaceLeaf, TFile, Notice, MarkdownRenderer, Component } from "obsidian";
 import { ObsidianParser } from "../markdown/obsidian-parser";
 import { WechatFormatter } from "../markdown/wechat-formatter";
 import { MermaidRenderer } from "../markdown/mermaid-renderer";
@@ -12,12 +12,14 @@ export class PreviewView extends ItemView {
     private contentEl!: HTMLElement;
     private markdownRenderer: import("../markdown/markdown-renderer").MarkdownRenderer;
     private mermaidRenderer: MermaidRenderer;
+    private app: App;
 
-    constructor(leaf: WorkspaceLeaf, settings: NoteToPublicSettings) {
+    constructor(leaf: WorkspaceLeaf, settings: NoteToPublicSettings, app?: App) {
         super(leaf);
         this.settings = settings;
+        this.app = app || leaf.view.app;
         this.markdownRenderer = new (require("../markdown/markdown-renderer").MarkdownRenderer)();
-        this.mermaidRenderer = new MermaidRenderer();
+        this.mermaidRenderer = new MermaidRenderer(this.app);
     }
 
     getViewType() { return VIEW_TYPE_PREVIEW; }
@@ -362,12 +364,15 @@ export class PreviewView extends ItemView {
 
     private async renderMermaidChart(code: string, container: HTMLElement) {
         try {
-            const mermaidMod = await import("mermaid");
-            await this.mermaidRenderer.renderToSVG(code);
-            const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            const { svg } = await mermaidMod.default.render(id, code);
+            const svg = await this.mermaidRenderer.renderToSVG(code);
             container.innerHTML = svg;
             container.style.cssText = "text-align:center;margin:16px 0;padding:16px;background:var(--background-secondary);border-radius:8px;";
+            // 设置 SVG 自适应
+            const svgEl = container.querySelector("svg");
+            if (svgEl) {
+                svgEl.style.maxWidth = "100%";
+                svgEl.style.height = "auto";
+            }
         } catch (error) {
             console.error("Mermaid 渲染失败:", error);
             container.innerHTML = `<div style="color:var(--text-error);padding:16px;text-align:center;background:var(--background-secondary);border-radius:8px;">Mermaid 渲染失败</div>`;

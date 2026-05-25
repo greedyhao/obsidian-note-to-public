@@ -1,6 +1,6 @@
 {
   "name": "obsidian-note-to-public",
-  "version": "0.1.2",
+  "version": "0.1.1",
   "description": "一键发布 Obsidian 笔记到微信公众号等平台",
   "main": "main.js",
   "scripts": {
@@ -35,7 +35,6 @@
     "highlight.js": "^11.9.0",
     "js-yaml": "^4.1.0",
     "juice": "^11.0.0",
-    "markdown-it": "^14.1.0",
-    "mermaid": "^10.9.0"
+    "markdown-it": "^14.1.0"
   }
 }
