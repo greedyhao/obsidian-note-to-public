@@ -1,4 +1,4 @@
-import * as yaml from "js-yaml";
+import { parse } from "yaml";
 
 export interface ArticleMetadata {
     title: string;
@@ -48,7 +48,7 @@ export class ObsidianParser {
 
         if (match) {
             try {
-                const metadata = yaml.load(match[1]) as any || {};
+                const metadata = parse(match[1]) as any || {};
                 const remainingContent = content.slice(match[0].length);
                 return { metadata, content: remainingContent };
             } catch (e) {
