@@ -142,7 +142,24 @@ src/
 ```bash
 pnpm run dev      # Development mode (hot reload)
 pnpm run build    # Production build
+pnpm test         # Run tests
 ```
+
+### Release
+
+To create a new release, push a git tag:
+
+```bash
+# Update version in manifest.json and package.json
+# Build the plugin
+pnpm run build
+
+# Create and push a tag
+git tag -a 0.1.3 -m "0.1.3"
+git push origin 0.1.3
+```
+
+GitHub Actions will automatically build and create a draft release with `main.js` and `manifest.json`.
 
 ## Roadmap
 

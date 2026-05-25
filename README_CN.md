@@ -142,7 +142,24 @@ src/
 ```bash
 pnpm run dev      # 开发模式（热重载）
 pnpm run build    # 生产构建
+pnpm test         # 运行测试
 ```
+
+### 发布
+
+创建新版本发布，推送 git tag：
+
+```bash
+# 更新 manifest.json 和 package.json 中的版本号
+# 构建插件
+pnpm run build
+
+# 创建并推送 tag
+git tag -a 0.1.3 -m "0.1.3"
+git push origin 0.1.3
+```
+
+GitHub Actions 会自动构建并创建包含 `main.js` 和 `manifest.json` 的草稿 Release。
 
 ## 路线图
 
