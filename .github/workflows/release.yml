@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -51,6 +53,11 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+      - name: Attest main.js
+        uses: actions/attest@v1
+        with:
+          subject-path: main.js
 
       - name: Create release
         env:
