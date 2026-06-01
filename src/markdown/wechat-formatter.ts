@@ -211,11 +211,14 @@ export class WechatFormatter {
         return tmp.innerHTML;
     }
 
-    // 最后兜底：确保代码块可横向滚动
+    // 最后兜底：确保代码块可横向滚动且保留 ASCII 艺术中的连续空格
+    // 1. 在 <code> 末尾追加 white-space:pre + min-width:max-content
+    //    - white-space:pre → 不折行、保留多空格；append 方式不依赖找到旧值
+    //    - min-width:max-content → 代码块宽度按最长行撑开，配合父级 overflow-x 滚动
     private finalCodeBlockFix(html: string): string {
         html = html.replace(
-            /(<code[^>]*style="[^"]*)white-space:\s*[^;"'`]+/g,
-            '$1white-space:nowrap'
+            /(<code[^>]*style="[^"]*)(")/g,
+            '$1white-space:pre;min-width:max-content;$2'
         );
         html = html.replace(
             /(<pre[^>]*style="[^"]*)(")/g,

@@ -73,6 +73,40 @@ describe('WechatFormatter', () => {
       expect(result).toContain('<code');
       expect(result).toContain('hljs');
     });
+
+    it('should preserve multiple spaces in code blocks (ASCII art)', () => {
+      // 模拟 juice 内联样式后 <code> 上带 white-space 属性的效果，
+      // 让 finalCodeBlockFix 有东西可替换。
+      // 真实环境里 juice 会内联 `#wemd pre code { white-space: pre; }`，
+      // 这里直接用 in-memory 桩函数注入同等的 inline style。
+      const f = new WechatFormatter();
+      (f as any).inlineStyles = (html: string) =>
+        html.replace(
+          /<code([^>]*)>/g,
+          '<code$1 style="white-space:something;overflow-x:auto;">'
+        );
+
+      const markdown = [
+        '```',
+        'A    B',
+        'C            D',
+        '```',
+      ].join('\n');
+      const result = f.format(markdown, new Map());
+
+      // finalCodeBlockFix 应把 white-space 强制改成 pre（保留 ASCII 空格），
+      // 而不是 nowrap（折叠多空格）。
+      expect(result).toContain('white-space:pre');
+      expect(result).not.toContain('white-space:nowrap');
+
+      // 行内的连续空格必须仍存在（普通空格或 &nbsp; 都行）
+      const codeMatch = result.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+      expect(codeMatch).not.toBeNull();
+      const codeInner = codeMatch![1];
+      const hasNbsp = /A(&nbsp;){4}B/.test(codeInner);
+      const hasLiteralSpaces = /A {4}B/.test(codeInner);
+      expect(hasNbsp || hasLiteralSpaces).toBe(true);
+    });
   });
 
   describe('formatForCopy', () => {

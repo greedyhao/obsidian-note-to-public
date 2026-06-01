@@ -152,6 +152,14 @@ export class PreviewView extends ItemView {
             await MarkdownRenderer.render(this.app, parsed.content, tempDiv, this.currentFile.path, comp);
             await new Promise(r => setTimeout(r, 500));
 
+            // 修掉 Obsidian 默认给 <code> 加的 white-space: pre-wrap
+            // 否则 ASCII 艺术里的多空格会在被复制/粘贴的目标里折行
+            // 改为 pre 配合父级 <pre> 的 overflow-x:auto 横向滚动
+            for (const codeEl of Array.from(tempDiv.querySelectorAll("pre > code"))) {
+                const htmlEl = codeEl as HTMLElement;
+                htmlEl.style.whiteSpace = "pre";
+            }
+
             // Mermaid SVG → PNG
             for (const mermaidEl of Array.from(tempDiv.querySelectorAll(".mermaid, pre.mermaid"))) {
                 const svgEl = mermaidEl.querySelector("svg");
