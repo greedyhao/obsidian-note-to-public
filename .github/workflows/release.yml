@@ -55,7 +55,7 @@ jobs:
         run: pnpm test
 
       - name: Attest main.js
-        uses: actions/attest@v1
+        uses: actions/attest-build-provenance@v1
         with:
           subject-path: main.js
 
